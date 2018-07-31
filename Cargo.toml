@@ -1,0 +1,17 @@
+[package]
+name = "csv_multithread"
+version = "0.1.0"
+authors = ["Pierre Marijon <pierre@marijon.fr>"]
+
+[dependencies]
+csv = "*"
+itertools = "*"
+rayon = "*"
+serde = "*"
+serde_derive = "*"
+criterion = "*"
+
+[[bench]]
+name = "benchmark"
+harness = false
+
