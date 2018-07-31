@@ -10,21 +10,32 @@ use criterion::*;
 
 use csv_multithread::*;
 
-
-fn bench(c: &mut Criterion) {
+fn buff_size(c: &mut Criterion) {
     c.bench(
-        "mutex",
+        "mutex_variable",
         ParameterizedBenchmark::new(
             "buff_size",
             |b, size| { b.iter(|| mutex(*size));},
             (1..=12).map(|x| (2 as usize).pow(x))
         )
-        .sample_size(10)
+        .sample_size(20)
         .warm_up_time(Duration::new(2, 0))
         .measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
     );
 }
 
-criterion_group!(benches, bench);
+fn compare(c: &mut Criterion) {
+    c.bench(
+        "compare",
+        Benchmark::new("mutex", |b| { b.iter(|| mutex(1024));})
+        .sample_size(20)
+        .warm_up_time(Duration::new(2, 0))
+        .measurement_time(Duration::new(240, 0))
+        .throughput(Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
+        .with_function("basic", |b| { b.iter(|| basic())})
+    );
+}
+
+criterion_group!(benches, buff_size, compare);
 criterion_main!(benches);
