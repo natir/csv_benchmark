@@ -7,11 +7,11 @@ extern crate serde_derive;
 
 use std::io::BufRead;
 use itertools::Itertools;
-use std::time::Instant;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
+use std::sync::mpsc;
+use std::time::Duration;
+use std::thread;
 
 mod paf;
 mod utils;
@@ -19,7 +19,7 @@ mod utils;
 use paf::Reader;
 use utils::*;
 
-pub fn basic() {
+pub fn basic() -> Read2Mapping {
     let mut result: Read2Mapping = std::collections::HashMap::new();
     let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
     
@@ -47,10 +47,12 @@ pub fn basic() {
         result.entry(key_a).or_insert(Vec::new()).push(val_a);
         result.entry(key_b).or_insert(Vec::new()).push(val_b);
     }
+
+    return result;
 }
 
 pub fn mutex(nb_record: usize) {
-    let result: Arc<Mutex<Read2Mapping>> = Arc::new(Mutex::new(HashMap::new()));
+    let result = Arc::new(Mutex::new(HashMap::new()));
     let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
 
     let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
@@ -58,7 +60,8 @@ pub fn mutex(nb_record: usize) {
     pool.install(|| {
         for chunk in file.lines().chunks(nb_record*1).into_iter() {
             let result = Arc::clone(&result);
-            let buffer = chunk.map(|x| x.unwrap()).collect::<Vec<String>>().concat().into_bytes();
+            let buffer = chunk.map(|x| x.unwrap()).collect::<Vec<String>>().join("\n").into_bytes();
+            
             rayon::spawn(move || {
                 for r in Reader::new(buffer.as_slice()).records() {
                     let record = r.unwrap();
@@ -87,23 +90,24 @@ pub fn mutex(nb_record: usize) {
                         r.entry(key_b).or_insert(Vec::new()).push(val_b);
                     }
                 }
+                drop(result);
             });
         }
     });
 }
 
-use std::sync::mpsc;
 
-fn message(nb_record: usize) {
+pub fn message(nb_record: usize) -> Read2Mapping {
     let mut result: Read2Mapping = HashMap::new();
+    
     let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
-    let (sender, receiver) = mpsc::sync_channel(nb_record);
+    let (sender, receiver) = mpsc::channel();
     
     let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
-    
+   
     pool.install(|| {
         for chunk in file.lines().chunks(nb_record*1).into_iter() {
-            let buffer = chunk.map(|x| x.unwrap()).collect::<Vec<String>>().concat().into_bytes();
+            let buffer = chunk.map(|x| x.unwrap()).collect::<Vec<String>>().join("\n").into_bytes();
             let sender = sender.clone();
             rayon::spawn(move || {
                 for r in Reader::new(buffer.as_slice()).records() {
@@ -127,15 +131,19 @@ fn message(nb_record: usize) {
                         end: record.end_b,
                     };
 
-                    sender.send((key_a, val_a)).unwrap();
+                    sender.send((Some(key_a), Some(val_a))).unwrap();
+                    sender.send((Some(key_b), Some(val_b))).unwrap();
                 }
             });
         }
+        drop(sender);
     });
 
     for (k, v) in receiver.iter() {
-        result.entry(k).or_insert(Vec::new()).push(v);
+        result.entry(k.unwrap()).or_insert(Vec::new()).push(v.unwrap());
     }
+
+    return result;
 }
 
 #[cfg(test)]
@@ -144,8 +152,9 @@ mod tests {
 
     #[test]
     fn it_works() {
-        basic();
-        mutex(10);
-        assert_eq!(2 + 2, 4);
+        let ba = basic();
+        let me = message(128);
+    
+        assert_eq!(ba, me);
     }
 }

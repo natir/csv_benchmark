@@ -12,15 +12,28 @@ use csv_multithread::*;
 
 fn buff_size(c: &mut Criterion) {
     c.bench(
-        "mutex_variable",
+        "mutex",
         ParameterizedBenchmark::new(
-            "buff_size",
+            "buffsize",
             |b, size| { b.iter(|| mutex(*size));},
             (1..=12).map(|x| (2 as usize).pow(x))
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .measurement_time(Duration::new(240, 0))
+        //.measurement_time(Duration::new(240, 0))
+        .throughput(|_| Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
+    );
+    
+    c.bench(
+        "messsage",
+        ParameterizedBenchmark::new(
+            "buffsize",
+            |b, size| { b.iter(|| mutex(*size));},
+            (1..=12).map(|x| (2 as usize).pow(x))
+        )
+        .sample_size(40)
+        .warm_up_time(Duration::new(2, 0))
+        //.measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
     );
 }
@@ -31,9 +44,10 @@ fn compare(c: &mut Criterion) {
         Benchmark::new("mutex", |b| { b.iter(|| mutex(128));})
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .measurement_time(Duration::new(240, 0))
+        //.measurement_time(Duration::new(240, 0))
         .throughput(Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
         .with_function("basic", |b| { b.iter(|| basic())})
+        .with_function("message", |b| {b.iter(|| message(128))})
     );
 }
 
