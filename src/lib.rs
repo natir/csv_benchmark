@@ -17,9 +17,9 @@ mod utils;
 use paf::Reader;
 use utils::*;
 
-pub fn basic() -> Read2Mapping {
+pub fn basic(filename: &str) -> Read2Mapping {
     let mut result: Read2Mapping = std::collections::HashMap::new();
-    let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
+    let file = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     
     for r in Reader::new(file).records() {
         let record = r.unwrap();
@@ -49,9 +49,9 @@ pub fn basic() -> Read2Mapping {
     return result;
 }
 
-pub fn mutex(nb_record: usize) -> Read2Mapping {
+pub fn mutex(filename: &str, nb_record: usize) -> Read2Mapping {
     let result = Arc::new(Mutex::new(HashMap::new()));
-    let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
+    let file = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
 
     let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
 
@@ -99,10 +99,10 @@ pub fn mutex(nb_record: usize) -> Read2Mapping {
 }
 
 
-pub fn message(nb_record: usize) -> Read2Mapping {
+pub fn message(filename: &str, nb_record: usize) -> Read2Mapping {
     let mut result: Read2Mapping = HashMap::new();
     
-    let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
+    let file = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let (sender, receiver) = mpsc::channel();
     
     let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
@@ -156,9 +156,9 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let mut ba = basic();
-        let mut me = message(128);
-        let mut mu = mutex(128);
+        let mut ba = basic("short.paf");
+        let mut me = message("short.paf", 128);
+        let mut mu = mutex("short.paf", 128);
         
         {
             let mut ba_key = ba.keys().collect::<Vec<&NameLen>>(); 
