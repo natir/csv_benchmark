@@ -23,6 +23,18 @@ impl Hash for NameLen {
     }
 }
 
+impl Ord for NameLen {
+    fn cmp(&self, other: &NameLen) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialOrd for NameLen {
+    fn partial_cmp(&self, other: &NameLen) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Interval {
     pub begin: u64,
