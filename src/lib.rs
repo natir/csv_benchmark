@@ -112,7 +112,7 @@ pub fn message(nb_record: usize) -> Read2Mapping {
             for chunk in file.lines().chunks(nb_record*1).into_iter() {
                 let buffer = chunk.map(|x| x.unwrap()).collect::<Vec<String>>().join("\n").into_bytes();
                 let sender = sender.clone();
-                rayon::spawn(move || {
+                s.spawn(move |_| {
                     for r in Reader::new(buffer.as_slice()).records() {
                         let record = r.unwrap();
 
