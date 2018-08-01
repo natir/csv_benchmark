@@ -53,7 +53,7 @@ pub fn mutex(nb_record: usize) {
     let result: Arc<Mutex<Read2Mapping>> = Arc::new(Mutex::new(HashMap::new()));
     let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
 
-    let pool = rayon::ThreadPoolBuilder::new().num_threads(8).build().unwrap();
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
 
     pool.install(|| {
         for chunk in file.lines().chunks(nb_record*1).into_iter() {
@@ -99,7 +99,7 @@ fn message(nb_record: usize) {
     let file = std::io::BufReader::new(std::fs::File::open("test.csv").unwrap());
     let (sender, receiver) = mpsc::sync_channel(nb_record);
     
-    let pool = rayon::ThreadPoolBuilder::new().num_threads(8).build().unwrap();
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
     
     pool.install(|| {
         for chunk in file.lines().chunks(nb_record*1).into_iter() {

@@ -18,7 +18,7 @@ fn buff_size(c: &mut Criterion) {
             |b, size| { b.iter(|| mutex(*size));},
             (1..=12).map(|x| (2 as usize).pow(x))
         )
-        .sample_size(20)
+        .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
         .measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
@@ -28,8 +28,8 @@ fn buff_size(c: &mut Criterion) {
 fn compare(c: &mut Criterion) {
     c.bench(
         "compare",
-        Benchmark::new("mutex", |b| { b.iter(|| mutex(1024));})
-        .sample_size(20)
+        Benchmark::new("mutex", |b| { b.iter(|| mutex(128));})
+        .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
         .measurement_time(Duration::new(240, 0))
         .throughput(Throughput::Bytes(fs::metadata("test.csv").unwrap().len() as u32))
