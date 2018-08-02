@@ -49,11 +49,11 @@ pub fn basic(filename: &str) -> Read2Mapping {
     return result;
 }
 
-pub fn mutex(filename: &str, nb_record: usize) -> Read2Mapping {
+pub fn mutex(filename: &str, nb_record: usize, nb_thread: usize) -> Read2Mapping {
     let result = Arc::new(Mutex::new(HashMap::new()));
     let file = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
 
-    let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(nb_thread).build().unwrap();
 
     pool.install(|| {
         rayon::scope(|s| {
@@ -99,13 +99,13 @@ pub fn mutex(filename: &str, nb_record: usize) -> Read2Mapping {
 }
 
 
-pub fn message(filename: &str, nb_record: usize) -> Read2Mapping {
+pub fn message(filename: &str, nb_record: usize, nb_thread: usize) -> Read2Mapping {
     let mut result: Read2Mapping = HashMap::new();
     
     let file = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let (sender, receiver) = mpsc::channel();
     
-    let pool = rayon::ThreadPoolBuilder::new().num_threads(4).build().unwrap();
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(nb_thread).build().unwrap();
    
     pool.install(|| {
         rayon::scope(|s| {
@@ -156,9 +156,9 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let mut ba = basic("short.paf");
-        let mut me = message("short.paf", 128);
-        let mut mu = mutex("short.paf", 128);
+        let ba = basic("1.paf");
+        let mut me = message("1.paf", 128, 4);
+        let mut mu = mutex("1.paf", 128, 4);
         
         {
             let mut ba_key = ba.keys().collect::<Vec<&NameLen>>(); 
