@@ -15,24 +15,24 @@ fn file_size(c: &mut Criterion) {
         "mutex",
         ParameterizedBenchmark::new(
             "filesize",
-            |b, file| { b.iter(|| mutex(file.as_str(), 256, 4));},
-            (1..=6).map(|x| format!("{}.paf", x*2))
+            |b, file| { b.iter(|| mutex(format!("{}.paf", file).as_str(), 256, 4));},
+            (1..=6).map(|x| x*2)
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|file| Throughput::Bytes(fs::metadata(&file).unwrap().len() as u32))
+        .throughput(|file| Throughput::Bytes(fs::metadata(format!("{}.paf", file)).unwrap().len() as u32))
     );
 
     c.bench(
         "messsage",
         ParameterizedBenchmark::new(
             "filesize",
-            |b, file| { b.iter(|| message(file.as_str(), 256, 4));},
-            (1..=6).map(|x| format!("{}.paf", x*2))
+            |b, file| { b.iter(|| mutex(format!("{}.paf", file).as_str(), 256, 4));},
+            (1..=6).map(|x| x*2)
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|file| Throughput::Bytes(fs::metadata(&file).unwrap().len() as u32))
+        .throughput(|file| Throughput::Bytes(fs::metadata(format!("{}.paf", file)).unwrap().len() as u32))
     );
 }
 
@@ -58,7 +58,6 @@ fn buff_size(c: &mut Criterion) {
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        //.measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
     );
 }
@@ -73,7 +72,6 @@ fn nb_thread(c: &mut Criterion) {
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        //.measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
     );
     
@@ -86,7 +84,6 @@ fn nb_thread(c: &mut Criterion) {
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        //.measurement_time(Duration::new(240, 0))
         .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
     );
 }
@@ -98,7 +95,6 @@ fn compare(c: &mut Criterion) {
         Benchmark::new("mutex", |b| { b.iter(|| mutex("8.paf", 256, 4));})
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        //.measurement_time(Duration::new(240, 0))
         .throughput(Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
         .with_function("basic", |b| { b.iter(|| basic("8.paf"))})
         .with_function("message", |b| {b.iter(|| message("8.paf", 256, 4))})
