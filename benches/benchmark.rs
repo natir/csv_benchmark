@@ -97,7 +97,7 @@ fn buffsize_nb_thread(c: &mut Criterion) {
         "buffsize-nbthread",
         ParameterizedBenchmark::new(
             "mutex",
-            |b, param| { b.iter(|| message("8.paf", param.0, param.1));},
+            |b, param| { b.iter(|| message("2.paf", param.0, param.1));},
             (1..=12).map(|x| (2 as usize).pow(x)).cartesian_product((1..=12).map(|x| x*2))
         )
         .sample_size(40)
@@ -109,7 +109,7 @@ fn buffsize_nb_thread(c: &mut Criterion) {
         "buffsize-nbthread",
         ParameterizedBenchmark::new(
             "messsage",
-            |b, param| { b.iter(|| message("8.paf", param.0, param.1));},
+            |b, param| { b.iter(|| message("2.paf", param.0, param.1));},
             (1..=12).map(|x| (2 as usize).pow(x)).cartesian_product((1..=12).map(|x| x*2))
         )
         .sample_size(40)
