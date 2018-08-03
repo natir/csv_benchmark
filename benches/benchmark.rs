@@ -3,8 +3,12 @@ extern crate csv_multithread;
 #[macro_use]
 extern crate criterion;
 
+extern crate itertools;
+
 use std::fs;
 use std::time::Duration;
+
+use itertools::Itertools;
 
 use criterion::*;
 
@@ -88,6 +92,31 @@ fn nb_thread(c: &mut Criterion) {
     );
 }
 
+fn buffsize_nb_thread(c: &mut Criterion) {
+    c.bench(
+        "buffsize-nbthread",
+        ParameterizedBenchmark::new(
+            "mutex",
+            |b, param| { b.iter(|| message("8.paf", param.0, param.1));},
+            (1..=12).map(|x| (2 as usize).pow(x)).cartesian_product((1..=12).map(|x| x*2))
+        )
+        .sample_size(40)
+        .warm_up_time(Duration::new(2, 0))
+        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+    );
+    
+    c.bench(
+        "buffsize-nbthread",
+        ParameterizedBenchmark::new(
+            "messsage",
+            |b, param| { b.iter(|| message("8.paf", param.0, param.1));},
+            (1..=12).map(|x| (2 as usize).pow(x)).cartesian_product((1..=12).map(|x| x*2))
+        )
+        .sample_size(40)
+        .warm_up_time(Duration::new(2, 0))
+        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+    );
+}
 
 fn compare(c: &mut Criterion) {
     c.bench(
@@ -101,5 +130,5 @@ fn compare(c: &mut Criterion) {
     );
 }
 
-criterion_group!(benches, file_size, buff_size, nb_thread, compare);
+criterion_group!(benches, file_size, buff_size, nb_thread, buffsize_nb_thread, compare);
 criterion_main!(benches);
