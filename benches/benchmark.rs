@@ -45,24 +45,24 @@ fn buff_size(c: &mut Criterion) {
         "mutex",
         ParameterizedBenchmark::new(
             "buffsize",
-            |b, size| { b.iter(|| mutex("8.paf", *size, 4));},
+            |b, size| { b.iter(|| mutex("2.paf", *size, 4));},
             (1..=12).map(|x| (2 as usize).pow(x))
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
     
     c.bench(
         "messsage",
         ParameterizedBenchmark::new(
             "buffsize",
-            |b, size| { b.iter(|| message("8.paf", *size, 4));},
+            |b, size| { b.iter(|| message("2.paf", *size, 4));},
             (1..=12).map(|x| (2 as usize).pow(x))
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
 }
 
@@ -71,24 +71,24 @@ fn nb_thread(c: &mut Criterion) {
         "mutex",
         ParameterizedBenchmark::new(
             "nbthread",
-            |b, thread| { b.iter(|| mutex("8.paf", 256, *thread));},
+            |b, thread| { b.iter(|| mutex("2.paf", 256, *thread));},
             (1..=12).map(|x| x*2)
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
     
     c.bench(
         "messsage",
         ParameterizedBenchmark::new(
             "nbthread",
-            |b, thread| { b.iter(|| message("8.paf", 256, *thread));},
+            |b, thread| { b.iter(|| message("2.paf", 256, *thread));},
             (1..=12).map(|x| x*2)
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
 }
 
@@ -102,7 +102,7 @@ fn buffsize_nb_thread(c: &mut Criterion) {
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
     
     c.bench(
@@ -114,19 +114,19 @@ fn buffsize_nb_thread(c: &mut Criterion) {
         )
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(|_| Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
+        .throughput(|_| Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
     );
 }
 
 fn compare(c: &mut Criterion) {
     c.bench(
         "compare",
-        Benchmark::new("mutex", |b| { b.iter(|| mutex("8.paf", 256, 4));})
+        Benchmark::new("mutex", |b| { b.iter(|| mutex("2.paf", 256, 4));})
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
-        .throughput(Throughput::Bytes(fs::metadata("8.paf").unwrap().len() as u32))
-        .with_function("basic", |b| { b.iter(|| basic("8.paf"))})
-        .with_function("message", |b| {b.iter(|| message("8.paf", 256, 4))})
+        .throughput(Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
+        .with_function("basic", |b| { b.iter(|| basic("2.paf"))})
+        .with_function("message", |b| {b.iter(|| message("2.paf", 256, 4))})
     );
 }
 
