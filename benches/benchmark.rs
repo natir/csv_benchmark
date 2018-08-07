@@ -14,6 +14,16 @@ use criterion::*;
 
 use csv_multithread::*;
 
+use std::process::Command;
+
+fn cpp_version(filename: &'static str) -> impl Fn() -> Command {
+    move || {
+        let mut command = Command::new("./target/cpp_version");
+        command.arg(filename);
+        command
+    }
+}
+
 fn file_size(c: &mut Criterion) {
     c.bench(
         "mutex",
@@ -119,14 +129,18 @@ fn buffsize_nb_thread(c: &mut Criterion) {
 }
 
 fn compare(c: &mut Criterion) {
+    let mut command = Command::new("./target/cpp_version");
+    command.arg("2.paf");
+
     c.bench(
         "compare",
         Benchmark::new("mutex", |b| { b.iter(|| mutex("2.paf", 256, 4));})
         .sample_size(40)
         .warm_up_time(Duration::new(2, 0))
         .throughput(Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
-        .with_function("basic", |b| { b.iter(|| basic("2.paf"))})
+        .with_program("cpp", command)
         .with_function("message", |b| {b.iter(|| message("2.paf", 256, 4))})
+        .with_function("basic", |b| { b.iter(|| basic("2.paf"))})
     );
 }
 

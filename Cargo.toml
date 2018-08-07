@@ -3,6 +3,8 @@ name = "csv_multithread"
 version = "0.1.0"
 authors = ["Pierre Marijon <pierre@marijon.fr>"]
 
+build = "build.rs"
+
 [dependencies]
 csv = "*"
 itertools = "*"
@@ -10,6 +12,9 @@ rayon = "*"
 serde = "*"
 serde_derive = "*"
 criterion = "*"
+
+[build-dependencies]
+gcc = "0.3.54"
 
 [[bench]]
 name = "benchmark"
