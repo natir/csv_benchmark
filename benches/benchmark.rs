@@ -134,12 +134,12 @@ fn compare(c: &mut Criterion) {
 
     c.bench(
         "compare",
-        Benchmark::new("mutex", |b| { b.iter(|| mutex("2.paf", 256, 4));})
-        .sample_size(40)
+        Benchmark::new("mutex", |b| { b.iter(|| mutex("2.paf", 1024, 14));})
+        .sample_size(100)
         .warm_up_time(Duration::new(2, 0))
         .throughput(Throughput::Bytes(fs::metadata("2.paf").unwrap().len() as u32))
         .with_program("cpp", command)
-        .with_function("message", |b| {b.iter(|| message("2.paf", 256, 4))})
+        .with_function("message", |b| {b.iter(|| message("2.paf", 1024, 14))})
         .with_function("basic", |b| { b.iter(|| basic("2.paf"))})
     );
 }
